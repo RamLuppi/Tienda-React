@@ -59,24 +59,4 @@ El catálogo arranca vacío porque los productos se guardan en Firestore, no est
 
 Los componentes reutilizables están en `src/componentes`, las páginas en `src/paginas`, el contexto de auth y del carrito en `src/context`, y todo lo de Firebase en `src/firebase`.
 
-## Para desplegarlo
 
-Si lo van a subir a producción (Vercel, Netlify, etc.) hay dos cosas importantes:
-
-- Cargar las mismas variables de entorno del `.env` en el panel del hosting.
-- Cambiar las reglas de Firestore, porque el modo de prueba deja que cualquiera lea y escriba en la base. En Firestore Database > Reglas se puede restringir para que solo se pueda escribir si el usuario está logueado y su email está en la lista de admins:
-
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /productos/{productoId} {
-      allow read: if true;
-      allow write: if request.auth != null &&
-        request.auth.token.email in ['tuemail@gmail.com'];
-    }
-  }
-}
-```
-
-También hay que agregar el dominio donde lo publiquen a la lista de dominios autorizados en Authentication > Settings, si no el login no va a funcionar ahí.
