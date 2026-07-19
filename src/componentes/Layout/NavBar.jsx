@@ -1,58 +1,65 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { Navbar, Nav, Container, Badge, Button } from "react-bootstrap";
+import { FaShoppingCart, FaUserCircle, FaSignInAlt, FaSignOutAlt, FaToolbox } from "react-icons/fa";
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
 
 export function NavBar() {
   const { cantidadTotal } = useCart();
+  const { usuario, logout, esAdmin } = useAuth();
+  const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
-  const obtenerEstiloEnlace = ({ isActive }) => ({
-    color: isActive ? "#3498db" : "#2c3e50",
-    fontWeight: isActive ? "bold" : "normal",
-    textDecoration: "none",
-    fontSize: "1.05rem",
-    padding: "5px 10px",
-    borderRadius: "4px",
-    borderBottom: isActive ? "2px solid #3498db" : "2px solid transparent",
-    transition: "all 0.3s ease",
-  });
+  const claseEnlace = ({ isActive }) =>
+    `nav-link fw-medium d-flex align-items-center gap-1 ${isActive ? "text-primary" : "text-secondary"}`;
 
   return (
-    <nav style={{
-      display: "flex", 
-      justifyContent: "space-between",
-      alignItems: "center", 
-      padding: "1rem 2rem",
-      backgroundColor: "#ffffff",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
-      fontFamily: "sans-serif"
-    }}>
-      {/* Inicio y productos */}
-      <div style={{ display: "flex", gap: "15px" }}>
-        <NavLink to="/" style={obtenerEstiloEnlace}>
-          Inicio
-        </NavLink>
-        <NavLink to="/productos" style={obtenerEstiloEnlace}>
-          Productos
-        </NavLink>
-      </div>
+    <Navbar bg="white" expand="md" sticky="top" className="border-bottom py-3">
+      <Container>
+        <Navbar.Brand as={NavLink} to="/" className="fw-bold text-dark">
+          Mi Tienda
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="nav-principal" />
+        <Navbar.Collapse id="nav-principal">
+          <Nav className="me-auto gap-2">
+            <Nav.Link as={NavLink} to="/" className={claseEnlace}>Inicio</Nav.Link>
+            <Nav.Link as={NavLink} to="/productos" className={claseEnlace}>Productos</Nav.Link>
+            {esAdmin && (
+              <Nav.Link as={NavLink} to="/admin" className={claseEnlace}>
+                <FaToolbox /> Panel
+              </Nav.Link>
+            )}
+          </Nav>
 
-      {/* Carrito */}
-      <NavLink to="/carrito" style={obtenerEstiloEnlace}>
-        <span style={{ marginRight: "3px" }}>🛒</span> Carrito
-        {cantidadTotal > 0 && (
-          <span style={{ 
-            marginLeft: "8px", 
-            background: "#e74c3c", // Un rojo más sutil
-            color: "white", 
-            padding: "2px 8px", 
-            borderRadius: "10px",
-            fontSize: "0.85rem",
-            fontWeight: "bold"
-          }}>
-            {cantidadTotal}
-          </span>
-        )}
-      </NavLink>
-    </nav>
+          <Nav className="align-items-md-center gap-2">
+            <Nav.Link as={NavLink} to="/carrito" className={claseEnlace}>
+              <FaShoppingCart /> Carrito
+              {cantidadTotal > 0 && (
+                <Badge bg="danger" className="ms-1">{cantidadTotal}</Badge>
+              )}
+            </Nav.Link>
+
+            {usuario ? (
+              <>
+                <Nav.Link as={NavLink} to="/perfil" className={claseEnlace}>
+                  <FaUserCircle /> {usuario.email}
+                </Nav.Link>
+                <Button onClick={handleLogout} variant="outline-danger" size="sm">
+                  <FaSignOutAlt /> Salir
+                </Button>
+              </>
+            ) : (
+              <Button as={NavLink} to="/login" size="sm" variant="primary">
+                <FaSignInAlt /> Ingresar
+              </Button>
+            )}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 }

@@ -1,108 +1,86 @@
-import { useContext } from 'react';
-import { CartContext } from '../context/CartContext';
+import { useCart } from '../context/CartContext';
+import { Helmet } from 'react-helmet-async';
+import { Container, Row, Col, Card, Badge, Button } from 'react-bootstrap';
+import { FaTrashAlt, FaShoppingBag } from 'react-icons/fa';
 
 function Carrito() {
-  const { cart } = useContext(CartContext);
+  const { cart, removeFromCart, clearCart, precioTotal } = useCart();
 
   if (cart.length === 0) {
     return (
-      <div style={{ 
-        textAlign: 'center', 
-        padding: '5rem 2rem', 
-        fontFamily: 'system-ui, -apple-system, sans-serif', 
-        color: '#95a5a6' 
-      }}>
-        <h2 style={{ fontWeight: '500', fontSize: '1.5rem' }}>Tu carrito está vacío. ¡Explorá nuestra tienda!</h2>
-      </div>
+      <Container className="text-center text-muted py-5">
+        <Helmet>
+          <title>Carrito | Mi Tienda</title>
+        </Helmet>
+        <FaShoppingBag size={40} className="mb-3 opacity-50" />
+        <h2 className="fs-3 fw-normal">Tu carrito está vacío. ¡Explorá nuestra tienda!</h2>
+      </Container>
     );
   }
 
   return (
-    <div style={{
-      maxWidth: '550px',
-      margin: '3rem auto',
-      padding: '2.5rem 2rem',
-      backgroundColor: '#ffffff',
-      borderRadius: '16px',
-      boxShadow: '0 10px 25px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.02)',
-      fontFamily: 'system-ui, -apple-system, sans-serif'
-    }}>
-      <h1 style={{ 
-        color: '#2c3e50', 
-        fontSize: '1.6rem', 
-        marginBottom: '2rem', 
-        textAlign: 'center',
-        fontWeight: '700'
-      }}>
-        Tu Carrito de Compras
-      </h1>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '2rem' }}>
-        {cart.map((item) => (
-          <div 
-            key={item.id} 
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '1.2rem',
-              backgroundColor: '#fdfdfd',
-              borderRadius: '10px',
-              border: '1px solid #f1f2f6',
-              transition: 'transform 0.2s ease'
-            }}
-          >
-            <div>
-              <h5 style={{ margin: '0 0 6px 0', fontSize: '1.05rem', color: '#2c3e50', fontWeight: '600' }}>
-                {item.nombre}
-              </h5>
-              <p style={{ margin: '0', fontSize: '0.85rem', color: '#8892b0' }}>
-                Precio unitario: <span style={{ fontWeight: '500', color: '#2c3e50' }}>${item.precio}</span>
-              </p>
-            </div>
-            
-            <div style={{ 
-              backgroundColor: '#f1f2f6',
-              padding: '6px 12px',
-              borderRadius: '20px',
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              color: '#57606f',
-              textAlign: 'right'
-            }}>
-              Cantidad: {item.cantidad || 1}
-            </div>
+    <Container className="py-5">
+      <Helmet>
+        <title>Carrito | Mi Tienda</title>
+      </Helmet>
+
+      <Row className="justify-content-center">
+        <Col xs={12} sm={10} md={8} lg={6}>
+          <Card className="p-4 shadow-sm border-0">
+            <Card.Body>
+          <Card.Title as="h1" className="h4 text-center mb-4">
+            Tu Carrito de Compras
+          </Card.Title>
+
+          <div className="d-flex flex-column gap-3 mb-4">
+            {cart.map((item) => (
+              <div
+                key={item.id}
+                className="d-flex justify-content-between align-items-center p-3 bg-light rounded border"
+              >
+                <div>
+                  <h5 className="mb-1 fs-6 fw-semibold">{item.nombre}</h5>
+                  <p className="mb-0 small text-muted">
+                    Precio unitario: <span className="fw-semibold text-dark">${item.precio}</span>
+                  </p>
+                </div>
+
+                <div className="d-flex align-items-center gap-2">
+                  <Badge bg="secondary" pill className="fw-semibold px-3 py-2">
+                    Cantidad: {item.cantidad || 1}
+                  </Badge>
+
+                  <Button
+                    variant="outline-danger"
+                    size="sm"
+                    onClick={() => removeFromCart(item.id)}
+                    aria-label={`Eliminar ${item.nombre} del carrito`}
+                  >
+                    <FaTrashAlt size={12} className="me-1" /> Quitar
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      
-      <div style={{ 
-        borderTop: '1px solid #edaef2f',
-        paddingTop: '1.5rem', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center',
-        gap: '15px'
-      }}>
-        {/* Aca iria el total de la compra */}
-        
-        <button style={{
-          backgroundColor: '#2ed573',
-          color: 'white',
-          border: 'none',
-          padding: '14px 24px',
-          borderRadius: '10px',
-          cursor: 'pointer',
-          fontSize: '1rem',
-          fontWeight: '600',
-          width: '100%',
-          boxShadow: '0 4px 12px rgba(46, 213, 115, 0.2)',
-          transition: 'all 0.2s ease'
-        }}>
-          Finalizar Compra
-        </button>
-      </div>
-    </div>
+
+          <div className="border-top pt-4 d-flex flex-column align-items-center gap-3">
+            <p className="fs-5 fw-bold mb-0">
+              Total: ${precioTotal.toLocaleString()}
+            </p>
+
+            <Button variant="success" className="w-100 py-2">
+              Finalizar Compra
+            </Button>
+
+            <Button variant="link" className="text-muted text-decoration-underline" onClick={clearCart}>
+              Vaciar carrito
+            </Button>
+          </div>
+        </Card.Body>
+      </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 }
 

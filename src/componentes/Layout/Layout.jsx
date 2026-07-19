@@ -1,12 +1,11 @@
-import React from 'react';
-import { Header } from "./Header";
+import { NavBar } from "./NavBar";
 import { Footer } from "./Footer";
 
 export function Layout({ children }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Header />
-      <main style={{ flex: 1 }}>{children}</main>
+    <div className="d-flex flex-column min-vh-100">
+      <NavBar />
+      <main className="flex-grow-1">{children}</main>
       <Footer />
     </div>
   );

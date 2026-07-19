@@ -10,18 +10,10 @@ export function CartWidget() {
   const cantidadTotal = cart.reduce((total, producto) => total + producto.cantidad, 0);
 
   return (
-    <Link to="/carrito" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
-      <span style={{ fontSize: '1.5rem' }}>🛒</span>
+    <Link to="/carrito" className="d-flex align-items-center text-decoration-none text-reset">
+      <span className="fs-4">🛒</span>
       {cantidadTotal > 0 && (
-        <span style={{
-          backgroundColor: 'red',
-          color: 'white',
-          borderRadius: '50%',
-          padding: '2px 6px',
-          fontSize: '0.8rem',
-          marginLeft: '5px',
-          fontWeight: 'bold'
-        }}>
+        <span className="badge bg-danger rounded-circle p-1 ms-1 fw-bold fs-7" style={{ fontSize: '0.8rem' }}>
           {cantidadTotal}
         </span>
       )}

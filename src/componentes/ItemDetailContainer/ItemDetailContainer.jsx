@@ -1,23 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useCart } from '../../context/CartContext'; 
+import { Helmet } from 'react-helmet-async';
+import { Container, Row, Col, Card, Button } from 'react-bootstrap';
+import { useCart } from '../../context/CartContext';
+import { obtenerProductoPorId } from '../../firebase/productosService';
+import { Spinner } from '../Spinner/Spinner';
 
 export function ItemDetailContainer() {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [cantidad, setCantidad] = useState(1);
   const { addToCart } = useCart();
 
   useEffect(() => {
     setLoading(true);
-    fetch('/data/productos.json')
-      .then((res) => res.json())
-      .then((data) => {
-        const encontrado = data.find((prod) => prod.id == id);
+    obtenerProductoPorId(id)
+      .then((encontrado) => {
         setProducto(encontrado);
+        setError(null);
       })
-      .catch((err) => console.error("Error al cargar el detalle:", err))
+      .catch((err) => {
+        console.error("Error al cargar el detalle:", err);
+        setError('No se pudo cargar el producto. Intentá de nuevo más tarde.');
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -31,12 +38,12 @@ export function ItemDetailContainer() {
 
   const handleAgregar = () => {
     if (producto) {
-      const productoParaAgregar = { 
-        id: producto.id, 
-        nombre: producto.nombre, 
-        precio: producto.precio, 
-        imagen: producto.imagen, 
-        stock: producto.stock 
+      const productoParaAgregar = {
+        id: producto.id,
+        nombre: producto.nombre,
+        precio: producto.precio,
+        imagen: producto.imagen,
+        stock: producto.stock
       };
       addToCart(productoParaAgregar, cantidad);
       alert(`¡Agregaste ${cantidad} ${producto.nombre} al carrito!`);
@@ -44,12 +51,21 @@ export function ItemDetailContainer() {
   };
 
   if (loading) {
-    return <h2 style={{ textAlign: 'center', marginTop: '3rem', fontFamily: 'sans-serif' }}>Cargando detalle...</h2>;
+    return <Spinner texto="Cargando detalle..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center mt-5 text-danger">
+        <h2>{error}</h2>
+        <Link to="/productos">Volver al catálogo</Link>
+      </div>
+    );
   }
 
   if (!producto) {
     return (
-      <div style={{ textAlign: 'center', marginTop: '3rem', fontFamily: 'sans-serif' }}>
+      <div className="text-center mt-5">
         <h2>El producto solicitado no existe.</h2>
         <Link to="/productos">Volver al catálogo</Link>
       </div>
@@ -57,55 +73,70 @@ export function ItemDetailContainer() {
   }
 
   return (
-    <div style={{
-      maxWidth: '700px',
-      margin: '3rem auto',
-      padding: '2rem',
-      display: 'flex',
-      gap: '2rem',
-      backgroundColor: '#ffffff',
-      borderRadius: '12px',
-      boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-      flexWrap: 'wrap'
-    }}>
-      <div style={{ flex: '1', minWidth: '250px' }}>
-        <img src={producto.imagen} alt={producto.nombre} style={{ width: '100%', maxHeight: '350px', objectFit: 'cover', borderRadius: '8px' }} />
-      </div>
+    <>
+      <Helmet>
+        <title>{producto.nombre} | Mi Tienda</title>
+        <meta name="description" content={producto.descripcion || `Comprá ${producto.nombre} en Mi Tienda.`} />
+      </Helmet>
 
-      <div style={{ flex: '1', minWidth: '250px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '12px' }}>
-        <h2 style={{ color: '#2c3e50', margin: '0' }}>{producto.nombre}</h2>
-        <p style={{ color: '#27ae60', fontSize: '1.6rem', fontWeight: 'bold', margin: '0' }}>${producto.precio.toLocaleString()}</p>
-        <p style={{ fontSize: '0.9rem', color: '#7f8c8d', margin: '0 0 10px 0' }}>Stock disponible: <strong>{producto.stock} unidades</strong></p>
+      <Container className="my-5">
+        <Row className="justify-content-center">
+          <Col md={10} lg={8}>
+            <Card className="border-0 shadow-sm">
+              <Card.Body className="p-4">
+                <Row className="g-4 align-items-center">
+                  <Col md={6}>
+                    <img
+                      src={producto.imagen}
+                      alt={producto.nombre}
+                      className="img-fluid rounded"
+                    />
+                  </Col>
 
-        {/* Contador */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', margin: '10px 0' }}>
-          <button onClick={decrementar} style={{ padding: '2px 8px', cursor: 'pointer' }}>-</button>
-          <span style={{ fontWeight: 'bold' }}>{cantidad}</span>
-          <button onClick={incrementar} style={{ padding: '2px 8px', cursor: 'pointer' }}>+</button>
-        </div>
+                  <Col md={6} className="d-flex flex-column justify-content-center gap-2">
+                    <h2 className="mb-0">{producto.nombre}</h2>
+                    <p className="text-muted mb-2">{producto.descripcion}</p>
+                    <p className="fs-3 fw-bold text-success mb-0">
+                      ${producto.precio.toLocaleString()}
+                    </p>
+                    <p className="text-muted small mb-2">
+                      Stock disponible: <strong>{producto.stock} unidades</strong>
+                    </p>
 
-        <button 
-          onClick={handleAgregar}
-          style={{
-            backgroundColor: '#2ecc71',
-            color: 'white',
-            border: 'none',
-            padding: '12px 20px',
-            borderRadius: '6px',
-            fontWeight: 'bold',
-            fontSize: '1rem',
-            cursor: 'pointer',
-            width: '100%'
-          }}
-        >
-          Agregar al Carrito
-        </button>
+                    <div className="d-flex justify-content-center align-items-center gap-3 my-2">
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        className="rounded-circle"
+                        onClick={decrementar}
+                      >
+                        -
+                      </Button>
+                      <span className="fw-bold">{cantidad}</span>
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        className="rounded-circle"
+                        onClick={incrementar}
+                      >
+                        +
+                      </Button>
+                    </div>
 
-        <Link to="/productos" style={{ textDecoration: 'none', color: '#3498db', fontSize: '0.9rem', textAlign: 'center', marginTop: '5px' }}>
-          ← Volver al catálogo
-        </Link>
-      </div>
-    </div>
+                    <Button variant="success" className="w-100 fw-bold" onClick={handleAgregar}>
+                      Agregar al Carrito
+                    </Button>
+
+                    <Link to="/productos" className="btn btn-secondary text-center small mt-2">
+                      ← Volver al catálogo
+                    </Link>
+                  </Col>
+                </Row>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+    </>
   );
 }
