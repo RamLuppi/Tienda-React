@@ -48,7 +48,7 @@ npm run dev
 
 Y entrar a http://localhost:5173
 
-## Ojo con esto
+## Catalago de productos
 
 El catálogo arranca vacío porque los productos se guardan en Firestore, no están hardcodeados. Para cargar los primeros productos hay que:
 1. Registrarse en la app (o loguearse si ya tenés cuenta).
